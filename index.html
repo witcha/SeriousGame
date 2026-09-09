@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Serious Games — Witcha Feungchan</title>
+<meta name="description" content="Serious games research and teaching prototypes by Witcha Feungchan, Khon Kaen University: game design frameworks, context-aware learning, and assistive applications for autistic children.">
+<meta name="author" content="Witcha Feungchan">
+
+<meta property="og:type" content="website">
+<meta property="og:title" content="Serious Games — Witcha Feungchan">
+<meta property="og:description" content="Games built to do a job: learning, training, and therapy. Research publications and playable arithmetic prototypes.">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Fraunces:opsz,wght@9..144,500;9..144,700&display=swap" rel="stylesheet">
+
+<style>
+/* ── tokens ─────────────────────────────────────────────────────────────── */
+:root{
+  --paper:#eaece4;
+  --sink:#dfe2d8;
+  --ink:#1c221e;
+  --ink-deep:#1c221e;
+  --graphite:#5b6159;
+  --rule:#c6c9be;
+  --amber:#e39a22;
+  --indigo:#27355f;
+  --measure:64ch;
+  --pad:clamp(1.25rem, 5vw, 3.25rem);
+  --band:clamp(3.5rem, 8vw, 6rem);
+  --serif:"Fraunces","Iowan Old Style",Georgia,serif;
+  --sans:"Atkinson Hyperlegible","Segoe UI",system-ui,-apple-system,sans-serif;
+}
+
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;
+  background:var(--paper);
+  color:var(--ink);
+  font-family:var(--sans);
+  font-size:1.0625rem;
+  line-height:1.7;
+  -webkit-font-smoothing:antialiased;
+}
+img,svg{max-width:100%}
+
+a{color:var(--indigo);text-underline-offset:.18em;text-decoration-thickness:1px}
+a:hover{text-decoration-thickness:2px}
+:focus-visible{outline:3px solid var(--indigo);outline-offset:3px}
+
+.skip{position:absolute;left:-9999px}
+.skip:focus{left:var(--pad);top:.75rem;z-index:9;background:var(--ink);color:var(--paper);
+  padding:.6rem 1rem;text-decoration:none}
+
+.wrap{max-width:74rem;margin-inline:auto;padding-inline:var(--pad)}
+.prose{max-width:var(--measure)}
+.prose p{margin:0 0 1.15rem}
+
+/* ── masthead ───────────────────────────────────────────────────────────── */
+.masthead{
+  display:flex;flex-wrap:wrap;gap:.75rem 2rem;align-items:baseline;
+  justify-content:space-between;
+  padding-block:1.5rem 1.25rem;
+  border-bottom:1px solid var(--rule);
+}
+.masthead__id{font-weight:700;letter-spacing:.005em}
+.masthead__id span{display:block;font-weight:400;color:var(--graphite);font-size:.9rem;letter-spacing:0}
+.masthead__nav{display:flex;gap:1.5rem;font-size:.95rem}
+.masthead__nav a{color:var(--ink);text-decoration-color:var(--rule)}
+
+/* ── opening ────────────────────────────────────────────────────────────── */
+.opening{padding-block:clamp(2.75rem,7vw,5rem) var(--band)}
+.opening h1{
+  font-family:var(--serif);
+  font-weight:700;
+  font-size:clamp(2.35rem,6.4vw,4.15rem);
+  line-height:1.02;
+  letter-spacing:-.021em;
+  margin:0 0 1.6rem;
+  max-width:18ch;
+  font-variation-settings:"opsz" 120;
+}
+.prose .lead{
+  font-size:clamp(1.14rem,2.1vw,1.36rem);
+  line-height:1.55;
+  margin:0 0 1.9rem;
+  max-width:56ch;
+}
+.opening .prose p:last-child{margin-bottom:0}
+
+/* ── the loop ───────────────────────────────────────────────────────────── */
+.loop{margin:2.6rem 0 0;padding:0;list-style:none;display:flex;flex-wrap:wrap;gap:.55rem 1.15rem}
+.loop li{
+  position:relative;
+  border:1px solid var(--rule);
+  background:rgba(255,255,255,.5);
+  padding:.4rem .85rem;
+  font-size:.94rem;
+  line-height:1.35;
+}
+.loop li + li::before{
+  content:"";position:absolute;left:-.85rem;top:50%;
+  width:.36rem;height:.36rem;
+  border-top:1.6px solid var(--indigo);border-right:1.6px solid var(--indigo);
+  transform:translateY(-50%) rotate(45deg);
+}
+.loop-note{margin:.95rem 0 0;font-size:.95rem;color:var(--graphite);max-width:58ch}
+
+/* ── playfield (the one loud zone) ──────────────────────────────────────── */
+.play{background:var(--ink-deep);color:#edebe3;padding-block:var(--band)}
+.play h2{
+  font-family:var(--serif);font-weight:600;
+  font-size:clamp(1.6rem,3.4vw,2.2rem);line-height:1.15;
+  margin:0 0 .6rem;color:#f4f2ea;
+}
+.play__intro{max-width:56ch;color:#c2c1b8;margin:0 0 2.2rem;font-size:1rem}
+.play__grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(11.5rem,1fr));
+  gap:1px;
+  background:rgba(237,235,227,.16);
+  border:1px solid rgba(237,235,227,.16);
+}
+.tile{
+  background:var(--ink-deep);
+  color:inherit;text-decoration:none;
+  padding:1.15rem 1.15rem 1.3rem;
+  display:flex;flex-direction:column;gap:.15rem;
+  transition:background .12s linear,color .12s linear;
+}
+.tile__num{
+  font-family:var(--serif);font-weight:700;font-size:1.85rem;line-height:1;
+  color:var(--amber);font-variant-numeric:tabular-nums;margin-bottom:.5rem;
+}
+.tile__name{font-weight:700;font-size:1rem}
+.tile__topic{font-size:.9rem;color:#a8a79e;line-height:1.4}
+.tile:hover,.tile:focus-visible{background:var(--amber);color:var(--ink-deep)}
+.tile:hover .tile__num,.tile:focus-visible .tile__num{color:var(--ink-deep)}
+.tile:hover .tile__topic,.tile:focus-visible .tile__topic{color:#4a3608}
+.tile:focus-visible{outline-color:#f4f2ea}
+
+/* ── publications ───────────────────────────────────────────────────────── */
+.pubs{padding-block:var(--band)}
+.pubs > .wrap > h2{
+  font-family:var(--serif);font-weight:600;
+  font-size:clamp(1.6rem,3.4vw,2.2rem);margin:0 0 .55rem;line-height:1.15;
+}
+.pubs__intro{max-width:58ch;color:var(--graphite);margin:0 0 3rem}
+
+.strand{margin-bottom:2.9rem}
+.strand:last-of-type{margin-bottom:0}
+.strand h3{
+  font-family:var(--serif);font-weight:600;font-size:1.28rem;
+  margin:0 0 .3rem;line-height:1.25;
+}
+.strand > p{margin:0 0 1.1rem;color:var(--graphite);font-size:.96rem;max-width:60ch}
+
+.pub{
+  display:grid;grid-template-columns:4.25rem 1fr;gap:0 1.4rem;
+  padding:.95rem 0;border-top:1px solid var(--rule);
+}
+.pub:last-child{border-bottom:1px solid var(--rule)}
+.pub__year{
+  font-weight:700;color:var(--indigo);font-variant-numeric:tabular-nums;
+  font-size:.95rem;padding-top:.16rem;
+}
+.pub__title{margin:0;font-weight:700;font-size:1.02rem;line-height:1.45}
+.pub__title a{color:var(--ink);text-decoration-color:var(--amber);text-decoration-thickness:2px}
+.pub__meta{margin:.2rem 0 0;color:var(--graphite);font-size:.94rem;line-height:1.5}
+.pub__meta em{font-style:italic}
+
+/* ── footer ─────────────────────────────────────────────────────────────── */
+.foot{background:var(--sink);border-top:1px solid var(--rule);padding-block:2.75rem}
+.foot p{margin:0 0 .55rem;font-size:.95rem;color:var(--graphite);max-width:58ch}
+.foot p:last-child{margin-bottom:0}
+
+/* ── responsive ─────────────────────────────────────────────────────────── */
+@media (max-width:34rem){
+  .pub{grid-template-columns:1fr;gap:.15rem}
+  .pub__year{padding-top:0}
+  .masthead{padding-block:1.15rem}
+}
+
+@media (prefers-reduced-motion:reduce){
+  *{transition-duration:.01ms !important;animation-duration:.01ms !important}
+}
+
+@media print{
+  .play,.masthead__nav,.loop{display:none}
+  body{background:#fff;font-size:10.5pt;line-height:1.45}
+  .pub{break-inside:avoid}
+  .opening,.pubs{padding-block:0 1rem}
+}
+</style>
+</head>
+
+<body>
+<a class="skip" href="#games">Skip to the games</a>
+
+<header class="masthead wrap">
+  <div class="masthead__id">
+    Witcha Feungchan
+    <span>Instructor, Khon Kaen University</span>
+  </div>
+  <nav class="masthead__nav" aria-label="Sections">
+    <a href="#games">Games</a>
+    <a href="#publications">Publications</a>
+  </nav>
+</header>
+
+<main id="top">
+
+  <!-- ═══ SYNOPSIS ════════════════════════════════════════════════════════ -->
+  <section class="opening wrap">
+    <h1>Serious games for learning, training, and therapy</h1>
+
+    <div class="prose">
+      <p class="lead">I design and study games that carry a job beyond entertainment
+      — teaching a science concept, guiding a therapy exercise, screening for a
+      developmental condition — and I test whether they actually do that job.</p>
+
+      <p>The work began with the opposite question. Between 2009 and 2011 I ran
+      empirical studies on what makes an entertainment game enjoyable and how that
+      quality can be evaluated at all, first at the University of Regina and then
+      across a series of conference papers on game evaluation and mobile game
+      interaction. Measurement came before purpose.</p>
+
+      <p>From 2014 the same methods moved into Thai classrooms. Working with the
+      Faculty of Education at Khon Kaen University, my students and I built
+      context-aware ubiquitous learning systems and pedagogy-embedded games for
+      primary and secondary science, covering nutrition, vitamins, and physical
+      concepts, and tested them with real cohorts rather than in a lab.</p>
+
+      <p>Since 2019 the focus has been special education and therapy. With autistic
+      children in Thailand as the primary participants, we have built screening
+      applications, an interactive system for physical education class, a sound
+      interaction framework, and a breathing interaction system for self-regulation.
+      That line of work produced a book chapter on serious games for special
+      education in 2023 and, in 2026, a design framework that connects all three
+      uses — learning, training, and therapy — into a single process.</p>
+
+      <p>I teach game design, software engineering, interactive art programming, and
+      ubiquitous computing. The prototypes below are teaching material: small,
+      single-purpose arithmetic games that students can take apart and rebuild.</p>
+    </div>
+
+    <ol class="loop">
+      <li>Challenge</li>
+      <li>Player action</li>
+      <li>Feedback</li>
+      <li>Measured outcome</li>
+    </ol>
+    <p class="loop-note">Every game here runs that loop. The fourth step is what
+    separates a serious game from a fun one — the outcome is recorded, it sets the
+    next challenge, and it is the thing the study design is built around.</p>
+  </section>
+
+  <!-- ═══ GAMES ═══════════════════════════════════════════════════════════
+       EDIT ME: replace each tile__name and tile__topic with the real title
+       and topic once that game exists. Links are RELATIVE, so they work as
+       long as index.html sits in the same folder as math1.html … math10.html.
+       If index.html lives one level up, find-and-replace  href="math
+       with  href="SeriousGame/math
+  ══════════════════════════════════════════════════════════════════════════ -->
+  <section class="play" id="games">
+    <div class="wrap">
+      <h2>Ten arithmetic prototypes</h2>
+      <p class="play__intro">Each one takes a single arithmetic skill and wraps it in
+      one mechanic — no menus, no accounts, nothing to install. They run in the
+      browser and are meant to be read as source as much as played. Work in
+      progress; titles and topics will change as each is finished.</p>
+
+      <div class="play__grid">
+        <a class="tile" href="math1.html">
+          <span class="tile__num">01</span>
+          <span class="tile__name">Math 01</span>
+          <span class="tile__topic">Addition</span>
+        </a>
+        <a class="tile" href="math2.html">
+          <span class="tile__num">02</span>
+          <span class="tile__name">Math 02</span>
+          <span class="tile__topic">Subtraction</span>
+        </a>
+        <a class="tile" href="math3.html">
+          <span class="tile__num">03</span>
+          <span class="tile__name">Math 03</span>
+          <span class="tile__topic">Multiplication</span>
+        </a>
+        <a class="tile" href="math4.html">
+          <span class="tile__num">04</span>
+          <span class="tile__name">Math 04</span>
+          <span class="tile__topic">Division</span>
+        </a>
+        <a class="tile" href="math5.html">
+          <span class="tile__num">05</span>
+          <span class="tile__name">Math 05</span>
+          <span class="tile__topic">Mixed operations</span>
+        </a>
+        <a class="tile" href="math6.html">
+          <span class="tile__num">06</span>
+          <span class="tile__name">Math 06</span>
+          <span class="tile__topic">Place value</span>
+        </a>
+        <a class="tile" href="math7.html">
+          <span class="tile__num">07</span>
+          <span class="tile__name">Math 07</span>
+          <span class="tile__topic">Fractions</span>
+        </a>
+        <a class="tile" href="math8.html">
+          <span class="tile__num">08</span>
+          <span class="tile__name">Math 08</span>
+          <span class="tile__topic">Estimation</span>
+        </a>
+        <a class="tile" href="math9.html">
+          <span class="tile__num">09</span>
+          <span class="tile__name">Math 09</span>
+          <span class="tile__topic">Word problems</span>
+        </a>
+        <a class="tile" href="math10.html">
+          <span class="tile__num">10</span>
+          <span class="tile__name">Math 10</span>
+          <span class="tile__topic">Timed challenge</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ PUBLICATIONS ════════════════════════════════════════════════════ -->
+  <section class="pubs" id="publications">
+    <div class="wrap">
+      <h2>Publications in serious games</h2>
+      <p class="pubs__intro">Selected from a wider list, grouped by what the work was
+      trying to do rather than by year. Full record available on request.</p>
+
+      <div class="strand">
+        <h3>Frameworks and theory</h3>
+        <p>What a serious game has to contain to be worth building, and how the three
+        application areas relate to each other.</p>
+
+        <article class="pub">
+          <div class="pub__year">2026</div>
+          <div>
+            <p class="pub__title"><a href="https://doi.org/10.1016/j.chbr.2026.101251">A serious game design framework: From learning and training to therapeutic applications</a></p>
+            <p class="pub__meta">W. Feungchan and P. Chaichitwanidchakol.
+            <em>Computers in Human Behavior Reports</em>, vol. 23, art. 101251.</p>
+          </div>
+        </article>
+
+        <article class="pub">
+          <div class="pub__year">2023</div>
+          <div>
+            <p class="pub__title">Serious games and applications for special education in the VUCA world</p>
+            <p class="pub__meta">W. Feungchan. In P. Narot and N. Kiettikunwong (eds.),
+            <em>Interdisciplinary Perspectives on Special and Inclusive Education in a
+            Volatile, Uncertain, Complex &amp; Ambiguous (VUCA) World</em>,
+            International Perspectives on Inclusive Education vol. 20. Emerald
+            Publishing, Bingley, pp. 203–218.</p>
+          </div>
+        </article>
+      </div>
+
+      <div class="strand">
+        <h3>Therapeutic and assistive applications</h3>
+        <p>Built with and for autistic children in Thailand, covering screening,
+        physical activity, sound, and breath.</p>
+
+        <article class="pub">
+          <div class="pub__year">2024</div>
+          <div>
+            <p class="pub__title">Design and implementation of a breathing interaction system for autistic Thai children</p>
+            <p class="pub__meta">P. Chaichitwanidchakol and W. Feungchan.
+            <em>International Journal of Mobile Learning and Organisation</em>,
+            vol. 18, no. 1, pp. 74–100.</p>
+          </div>
+        </article>
+
+        <article class="pub">
+          <div class="pub__year">2021</div>
+          <div>
+            <p class="pub__title">The sound interaction framework for people with autism on mobile devices</p>
+            <p class="pub__meta">P. Chaichitwanidchakol and W. Feungchan.
+            <em>TNI Journal of Engineering and Technology</em>, vol. 9, no. 1.</p>
+          </div>
+        </article>
+
+        <article class="pub">
+          <div class="pub__year">2020</div>
+          <div>
+            <p class="pub__title"><a href="https://doi.org/10.3991/ijim.v14i14.15477">Design and implementation of interactive mobile application for autistic children in physical education class</a></p>
+            <p class="pub__meta">P. Chaichitwanidchakol and W. Feungchan.
+            <em>International Journal of Interactive Mobile Technologies (iJIM)</em>,
+            vol. 14, no. 14, p. 134.</p>
+          </div>
+        </article>
+
+        <article class="pub">
+          <div class="pub__year">2019</div>
+          <div>
+            <p class="pub__title">Applications to screen children with autism spectrum disorder</p>
+            <p class="pub__meta">K. R. Saikaew et al.
+            <em>23rd International Computer Science and Engineering Conference
+            (ICSEC)</em>, pp. 70–75.</p>
+          </div>
+        </article>
+      </div>
+
+      <div class="strand">
+        <h3>Learning games and context-aware learning</h3>
+        <p>Games and ubiquitous learning systems taken into Thai primary and
+        secondary classrooms and measured against learning outcomes.</p>
+
+        <article class="pub">
+          <div class="pub__year">2015</div>
+          <div>
+            <p class="pub__title">The effect of pedagogy-embedded digital game in primary science education: A comparison of students' understanding of vitamin</p>
+            <p class="pub__meta">M. Hiangsa, N. Srisawasdi, and W. Feungchan.
+            <em>23rd International Conference on Computers in Education (ICCE)</em>.</p>
+          </div>
+        </article>
+
+        <article class="pub">
+          <div class="pub__year">2015</div>
+          <div>
+            <p class="pub__title">Combining context-aware ubiquitous learning and computer simulation: A lesson learned in elementary science education</p>
+            <p class="pub__meta">K. Kongpet, N. Srisawasdi, and W. Feungchan.
+            <em>23rd International Conference on Computers in Education (ICCE)</em>.</p>
+          </div>
+        </article>
+
+        <article class="pub">
+          <div class="pub__year">2015</div>
+          <div>
+            <p class="pub__title">The Fruit Eater: A serious game to promote fruit and vegetable consumption among elementary school students</p>
+            <p class="pub__meta">T. Mathuros, N. Srisawasdi, W. Feungchan, and M. Hiangsa.
+            <em>2nd International Conference on Innovation in Education (ICIE)</em>,
+            Nakhon Pathom, Thailand.</p>
+          </div>
+        </article>
+
+        <article class="pub">
+          <div class="pub__year">2015</div>
+          <div>
+            <p class="pub__title">Answer Me for Learning: Development of a ubiquitous learning system for conducting context-aware learning experience</p>
+            <p class="pub__meta">K. Meuansechai, W. Feungchan, and N. Srisawasdi.
+            <em>2nd International Conference on Innovation in Education (ICIE)</em>,
+            Nakhon Pathom, Thailand.</p>
+          </div>
+        </article>
+      </div>
+
+      <div class="strand">
+        <h3>Game design and interaction, foundations</h3>
+        <p>The earlier work on evaluation and mobile interaction that the serious
+        game research is built on.</p>
+
+        <article class="pub">
+          <div class="pub__year">2018</div>
+          <div>
+            <p class="pub__title">Exploring mobile game interactions</p>
+            <p class="pub__meta">P. Chaichitwanidchakol and W. Feungchan.
+            <em>International Journal of Electrical and Computer Engineering</em>,
+            vol. 8, no. 5, pp. 3954–3965.</p>
+          </div>
+        </article>
+
+        <article class="pub">
+          <div class="pub__year">2010</div>
+          <div>
+            <p class="pub__title">Empirical study on game evaluation</p>
+            <p class="pub__meta">L. Benedicenti and W. Feungchan.
+            <em>25th International Technical Conference on Circuits/Systems,
+            Computers and Communications (ITC-CSCC)</em>, Pattaya, Thailand.</p>
+          </div>
+        </article>
+
+        <article class="pub">
+          <div class="pub__year">2009</div>
+          <div>
+            <p class="pub__title">Designing fun games: An empirical study</p>
+            <p class="pub__meta">W. Feungchan and L. Benedicenti.
+            Game Developers Conference Canada, Vancouver.</p>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">
+  <div class="wrap">
+    <p>Witcha Feungchan teaches game design, software engineering, interactive art
+    programming, and ubiquitous computing at Khon Kaen University, Thailand.</p>
+    <p>The prototypes on this page are open teaching material. Reuse them in a
+    classroom freely; a citation is appreciated if they turn up in published work.</p>
+  </div>
+</footer>
+
+</body>
+</html>

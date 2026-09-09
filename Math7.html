@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pizza Fraction - Serious Math Game</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #fdf6e3;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .game-card {
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+            padding: 24px;
+            width: 380px;
+            text-align: center;
+            border: 3px solid #e76f51;
+        }
+
+        h1 {
+            color: #e76f51;
+            margin-top: 0;
+            font-size: 26px;
+        }
+
+        .status-panel {
+            display: flex;
+            justify-content: space-between;
+            font-weight: bold;
+            background: #ffe8d6;
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .instruction {
+            font-size: 20px;
+            font-weight: 600;
+            min-height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #2a9d8f;
+        }
+
+        .fraction-target {
+            font-size: 28px;
+            font-weight: bold;
+            color: #e76f51;
+            display: inline-block;
+            margin: 0 5px;
+            vertical-align: middle;
+        }
+
+        canvas {
+            cursor: pointer;
+            margin: 10px 0;
+            border-radius: 50%;
+        }
+
+        .slice-controls {
+            margin: 10px 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn {
+            background-color: #e76f51;
+            color: white;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.1s, background-color 0.2s;
+        }
+
+        .btn:hover {
+            background-color: #d65a3b;
+        }
+
+        .btn:active {
+            transform: scale(0.96);
+        }
+
+        .btn-check {
+            background-color: #2a9d8f;
+            width: 100%;
+            margin-top: 10px;
+            font-size: 18px;
+        }
+
+        .btn-check:hover {
+            background-color: #218378;
+        }
+
+        .feedback {
+            font-size: 18px;
+            font-weight: bold;
+            height: 30px;
+            margin-top: 10px;
+        }
+
+        .correct { color: #2a9d8f; }
+        .wrong { color: #e76f51; }
+    </style>
+</head>
+<body>
+
+<div class="game-card">
+    <h1>🍕 Pizza Fraction</h1>
+    
+    <div class="status-panel">
+        <span id="level-label">Level: 1</span>
+        <span id="score-label">Score: 0</span>
+    </div>
+
+    <div class="instruction" id="instruction-text">
+        Slice the pizza!
+    </div>
+
+    <canvas id="pizzaCanvas" width="260" height="260"></canvas>
+
+    <div class="slice-controls" id="slice-adjuster" style="display: none;">
+        <span>Slices:</span>
+        <button class="btn" onclick="changeSlices(-1)">-</button>
+        <span id="slice-count-text" style="font-size: 20px; font-weight: bold;">4</span>
+        <button class="btn" onclick="changeSlices(1)">+</button>
+    </div>
+
+    <button class="btn btn-check" onclick="checkAnswer()">Serve Pizza! 🍕</button>
+
+    <div class="feedback" id="feedback"></div>
+</div>
+
+<script>
+    const canvas = document.getElementById('pizzaCanvas');
+    const ctx = canvas.getContext('2d');
+
+    let level = 1;
+    let score = 0;
+    
+    // Fraction logic variables
+    let totalSlices = 4;
+    let selectedSlices = [];
+    let targetNum = 1;
+    let targetDen = 2;
+
+    const center = 130;
+    const radius = 110;
+
+    function initRound() {
+        document.getElementById('feedback').textContent = '';
+        
+        // Progressive difficulty generator
+        if (score >= 40) level = 3;
+        else if (score >= 20) level = 2;
+        else level = 1;
+
+        document.getElementById('level-label').textContent = `Level: ${level}`;
+
+        if (level === 1) {
+            // Level 1: Basic matching
+            totalSlices = [2, 3, 4, 6, 8][Math.floor(Math.random() * 5)];
+            targetDen = totalSlices;
+            targetNum = Math.floor(Math.random() * (totalSlices - 1)) + 1;
+            document.getElementById('slice-adjuster').style.display = 'none';
+        } 
+        else if (level === 2) {
+            // Level 2: Student picks total slices and selects numerator
+            totalSlices = 4; // default initial slice
+            targetDen = [3, 4, 6, 8][Math.floor(Math.random() * 4)];
+            targetNum = Math.floor(Math.random() * (targetDen - 1)) + 1;
+            document.getElementById('slice-adjuster').style.display = 'flex';
+        }
+        else if (level === 3) {
+            // Level 3: Equivalent fractions (e.g. Target 1/2, pizza sliced in 8)
+            const baseDens = [2, 3, 4];
+            const multiplier = [2, 3][Math.floor(Math.random() * 2)];
+            
+            const baseDen = baseDens[Math.floor(Math.random() * baseDens.length)];
+            targetNum = Math.floor(Math.random() * (baseDen - 1)) + 1;
+            targetDen = baseDen;
+
+            totalSlices = targetDen * multiplier; // Forced multiplier pizza
+            document.getElementById('slice-adjuster').style.display = 'none';
+        }
+
+        selectedSlices = new Array(totalSlices).fill(false);
+        updateInstruction();
+        drawPizza();
+    }
+
+    function updateInstruction() {
+        const textEl = document.getElementById('instruction-text');
+        const fracHTML = `<span class="fraction-target"><sup>${targetNum}</sup>/<sub>${targetDen}</sub></span>`;
+        
+        if (level === 3) {
+            textEl.innerHTML = `Select an equivalent of ${fracHTML} of the pizza!`;
+        } else {
+            textEl.innerHTML = `Select ${fracHTML} of the pizza!`;
+        }
+        document.getElementById('slice-count-text').textContent = totalSlices;
+    }
+
+    function changeSlices(delta) {
+        let newTotal = totalSlices + delta;
+        if (newTotal >= 2 && newTotal <= 12) {
+            totalSlices = newTotal;
+            selectedSlices = new Array(totalSlices).fill(false);
+            document.getElementById('slice-count-text').textContent = totalSlices;
+            drawPizza();
+        }
+    }
+
+    function drawPizza() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        const sliceAngle = (Math.PI * 2) / totalSlices;
+
+        for (let i = 0; i < totalSlices; i++) {
+            const startAngle = i * sliceAngle - Math.PI / 2;
+            const endAngle = startAngle + sliceAngle;
+
+            ctx.beginPath();
+            ctx.moveTo(center, center);
+            ctx.arc(center, center, radius, startAngle, endAngle);
+            ctx.closePath();
+
+            if (selectedSlices[i]) {
+                // Toppings / Selected slice style
+                ctx.fillStyle = '#e76f51'; // Sauce/Pepperoni color
+                ctx.fill();
+                
+                // Add tiny topping details
+                const midAngle = startAngle + sliceAngle / 2;
+                const topX = center + (radius * 0.6) * Math.cos(midAngle);
+                const topY = center + (radius * 0.6) * Math.sin(midAngle);
+                
+                ctx.beginPath();
+                ctx.arc(topX, topY, 8, 0, Math.PI * 2);
+                ctx.fillStyle = '#b7094c';
+                ctx.fill();
+            } else {
+                // Unselected plain cheese slice
+                ctx.fillStyle = '#f4a261';
+                ctx.fill();
+            }
+
+            // Crust border
+            ctx.lineWidth = 4;
+            ctx.strokeStyle = '#e9c46a';
+            ctx.stroke();
+
+            // Slice cut line
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = '#ffffff';
+            ctx.stroke();
+        }
+
+        // Pizza center point
+        ctx.beginPath();
+        ctx.arc(center, center, 4, 0, Math.PI * 2);
+        ctx.fillStyle = '#ffffff';
+        ctx.fill();
+    }
+
+    // Click handler to select slice angle
+    canvas.addEventListener('click', (e) => {
+        const rect = canvas.getBoundingClientRect();
+        const x = e.clientX - rect.left - center;
+        const y = e.clientY - rect.top - center;
+
+        const distance = Math.sqrt(x * x + y * y);
+        if (distance > radius) return; // Outside pizza
+
+        let angle = Math.atan2(y, x) + Math.PI / 2;
+        if (angle < 0) angle += Math.PI * 2;
+
+        const sliceAngle = (Math.PI * 2) / totalSlices;
+        const clickedIndex = Math.floor(angle / sliceAngle);
+
+        selectedSlices[clickedIndex] = !selectedSlices[clickedIndex];
+        drawPizza();
+    });
+
+    function checkAnswer() {
+        const countSelected = selectedSlices.filter(Boolean).length;
+        
+        // Fractional equivalence check: (Selected / Total) == (TargetNum / TargetDen)
+        const userFraction = countSelected / totalSlices;
+        const targetFraction = targetNum / targetDen;
+
+        const feedbackEl = document.getElementById('feedback');
+
+        if (Math.abs(userFraction - targetFraction) < 0.0001) {
+            score += 10;
+            feedbackEl.textContent = '🎉 Correct! Delicious Fraction!';
+            feedbackEl.className = 'feedback correct';
+            document.getElementById('score-label').textContent = `Score: ${score}`;
+            setTimeout(initRound, 1800);
+        } else {
+            feedbackEl.textContent = `❌ Oops! That was ${countSelected}/${totalSlices}. Try again!`;
+            feedbackEl.className = 'feedback wrong';
+        }
+    }
+
+    // Start initial game round
+    initRound();
+</script>
+
+</body>
+</html>
